@@ -1,0 +1,29 @@
+#!/usr/sbin/nft -f
+
+# Somewhat experimental version of the WebTV nftables script. Uses IP ranges to cut down on the amount of lines.
+define ServerIP = 31.97.100.150
+define DNS = 9.9.9.9 # Quad9 DNS Service (https://www.quad9.net/)
+add table ip nat
+add chain ip nat PREROUTING { type nat hook prerouting priority -100; policy accept; }
+add chain ip nat INPUT { type nat hook input priority 100; policy accept; }
+add chain ip nat OUTPUT { type nat hook output priority -100; policy accept; }
+add chain ip nat POSTROUTING { type nat hook postrouting priority 100; policy accept; }
+add rule ip nat PREROUTING ip daddr 10.0.0.0-10.0.255.255 counter dnat to $ServerIP
+add rule ip nat PREROUTING ip daddr 192.168.102.0-192.168.102.255 counter dnat to $ServerIP
+add rule ip nat PREROUTING ip daddr 204.254.74.0-204.254.74.255 counter dnat to $ServerIP
+add rule ip nat PREROUTING ip daddr 207.76.180.0-207.76.180.255 counter dnat to $ServerIP
+add rule ip nat PREROUTING ip daddr 209.240.194.0-209.240.194.255 counter dnat to $ServerIP
+#add rule ip nat PREROUTING ip daddr 210.150.22.0-210.150.22.255 counter dnat to $ServerIP
+add rule ip nat PREROUTING ip daddr 157.57.221.51 counter dnat to $DNS
+add rule ip nat PREROUTING ip daddr 210.150.22.35 counter dnat to $DNS
+add rule ip nat PREROUTING ip daddr 210.150.22.65 counter dnat to $DNS
+#Don't forget to add to your postroutes!
+add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 10.0.0.0-10.0.255.255
+add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 192.168.102.0-192.168.102.255
+add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 204.254.74.0-204.254.74.255
+add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 207.76.180.0-207.76.180.255
+add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 209.240.194.0-209.240.194.255
+#add rule ip nat POSTROUTING ip saddr $ServerIP counter snat to 210.150.22.0-210.150.22.255
+add rule ip nat POSTROUTING ip saddr $DNS counter snat to 157.57.221.51
+add rule ip nat POSTROUTING ip saddr $DNS counter snat to 210.150.22.35
+add rule ip nat POSTROUTING ip saddr $DNS counter snat to 210.150.22.65
