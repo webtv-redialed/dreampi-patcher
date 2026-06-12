@@ -39,7 +39,7 @@ fi
 echo "Mounting image"
 sudo mount -o loop,offset="$offset" "$1" "$mount_point"
 
-if [ -z "$( ls -A "$mount_point" )" ]; then
+if [[ -z "$( ls -A "$mount_point" )" ]]; then
     echo "Something's not right, '"$mount_point"' is empty."
     exit 1
 fi
