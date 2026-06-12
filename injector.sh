@@ -18,22 +18,31 @@ EOD
 if [[ ! $1 ]]; then
     Help
     exit 0
+elif [[ ! -e "$1" ]]; then
+    echo "Huh? I can't seem to find '"$1"'"
+    exit 1
 fi
 
 linux_start_sector=$(fdisk -l "$1" | grep Linux | awk '{print $2}')
-offset=$(($linux_start_sector * 512))
+sector_size=$(fdisk -l "$1" | grep "Units: sectors" | awk '{print $8}')
+offset=$(($linux_start_sector * $sector_size))
 mount_point="/mnt/dreampi"
 compress_image=true
 
-echo "Linux partition found at $offset"
+echo "Linux partition found at "$offset""
 
 if [[ ! -d "$mount_point" ]]; then
-    echo "Mount point not found, creating one at '$mount_point'"
+    echo "Mount point not found, creating one at '"$mount_point"'"
     sudo mkdir "$mount_point"
 fi
 
 echo "Mounting image"
-sudo mount -o loop,offset=$offset "$1" "$mount_point"
+sudo mount -o loop,offset="$offset" "$1" "$mount_point"
+
+if [ -z "$( ls -A "$mount_point" )" ]; then
+    echo "Something's not right, '"$mount_point"' is empty."
+    exit 1
+fi
 
 echo "Copying files"
 cp -r "redialed_root/." "$mount_point/"
